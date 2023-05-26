@@ -31,22 +31,15 @@ struct Node* insertNode(struct Node* root, int data) {
         return temp;
     } else if (data < root->data) {     // if inserted node's data is less than parent's data
         root->left = insertNode(root->left, data);
-        root->left->parent = root;      // connect child node with parent node
-        setDepth(root,0);               // depth reassign
-
+        root->left->parent = root;      // connect child node with parent node      
+        root = rebalance(root);
     } else if (data > root->data) {     // if inserted node's data is bigger than parent's data
         root->right = insertNode(root->right, data);
         root->right->parent = root;     // connect child node with parent node
-        setDepth(root,0);               // depth reassign
-
+        root = rebalance(root);
+        root = setDepth(root, 0);              // depth reassign
     } else {}                           // data duplicated
     return root;
-}
-
-struct Node* insertNode_avl(struct Node* root, int data){   //avl tree's insert function
-    root = insertNode(root, data);  // insert node
-    root = rebalance(root);         // AVL make balance
-    setDepth(root, 0);              // depth reassign
 }
 
 // Binary Search
@@ -81,10 +74,14 @@ struct Node* deleteNode(struct Node* root, int data) {
     //left child
     if (data < root->data) {
         root->left = deleteNode(root->left, data);
+        root = setDepth(root, 0);          // depth assign
+        root = rebalance(root);     // rebalance after the delete function
     }
     //right child
     else if (data > root->data) {
         root->right = deleteNode(root->right, data);
+        root = setDepth(root, 0);          // depth assign
+        root = rebalance(root);     // rebalance after the delete function
     } 
     else { 
         // Node to be deleted found
@@ -121,13 +118,6 @@ struct Node* deleteNode(struct Node* root, int data) {
     }
     return root;
 }
-struct Node* deleteNode_avl(struct Node* root, int data){
-    root = deleteNode(root, data);
-    setDepth(root, 0);          // depth assign
-    root = rebalance(root);     // rebalance after the delete function
-    return setDepth(root, 0);   // depth reassign after balancing and return
-}
-
 struct Node* setDepth(struct Node* node, int depth){    // depth assign function
     if (node == NULL)                   // if null node
         return 0;
@@ -176,7 +166,7 @@ struct Node* Right_Rotate(struct Node* node)
     node->left = childNode->right;
     if (childNode->right != NULL){
         childNode->right->parent = node;
-        }
+        }   
     childNode->right = node;
     childNode->parent = node->parent;
     node->parent = childNode;
@@ -204,15 +194,14 @@ struct Node* RL(struct Node* node){     // RL case
 // 트리의 높이 균형을 유지하는 함수.
 // 4가지 케이스를 가지고 rotate를 수행함.
 struct Node* rebalance(struct Node* node){
-    int depth = balanceFactor(node);
-    if (depth >= 2)
+    int bf = balanceFactor(node);
+    if (bf > 1)
     {
-        depth = balanceFactor(node->left);
-        if (depth >= 1)
+        bf = balanceFactor(node->left);
+        if (bf > 0)
         {
             //Right_Rotate : left left
-            node = Right_Rotate(node);
-            printf("root data : %d\n", node->data);
+            node = LL(node);
         }
         else
         {
@@ -220,13 +209,13 @@ struct Node* rebalance(struct Node* node){
             node = LR(node);
         }
     }
-    else if (depth <= -2)
+    else if (bf < -1)
     {
-        depth = balanceFactor(node->right);
-        if (depth <= -1)
+        bf = balanceFactor(node->right);
+        if (bf < 0)
         {
             //Left_Rotate : right right
-            node = Left_Rotate(node);
+            node = RR(node);
         }
         else
         {
@@ -248,16 +237,17 @@ void inorderTraversal(struct Node* root) {
 
 int main() {
     struct Node* root = NULL;
-    root = insertNode_avl(root, 50);
-    root = insertNode_avl(root, 70);
-    root = insertNode_avl(root, 20);
-    root = insertNode_avl(root, 30);
-    root = insertNode_avl(root, 10);
-    root = insertNode_avl(root, 4);
-    
-    root = rebalance(root);
+    root = insertNode(root, 45);
+    root = insertNode(root, 15);
+    root = insertNode(root, 79);
+    root = insertNode(root, 10);
+    root = insertNode(root, 12);
+    root = insertNode(root, 20);
+    root = insertNode(root, 55);
+    root = insertNode(root, 50);
+    root = insertNode(root, 90);
 
-    root = deleteNode_avl(root, 70);
+
 
     inorderTraversal(root);
 
